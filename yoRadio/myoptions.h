@@ -6,6 +6,8 @@
 /* Put this file next to yoRadio.ino and restart Arduino IDE. */
 /* !!! Do not be alarmed, all right, the default values ​​are not included in this file !!! */
 
+#define NO_PSRAM    true
+
 #define I2S_INTERNAL		true
 
 // missing in defaults for IRRemoteESP8266 lib!

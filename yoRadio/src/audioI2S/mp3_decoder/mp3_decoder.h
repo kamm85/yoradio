@@ -3,14 +3,29 @@
 
 #include "Arduino.h"
 #include "assert.h"
+#include "../myoptions.h"
 
 static const uint8_t  m_HUFF_PAIRTABS          =32;
 static const uint8_t  m_BLOCK_SIZE             =18;
 static const uint8_t  m_NBANDS                 =32;
 static const uint8_t  m_MAX_REORDER_SAMPS      =(192-126)*3;      // largest critical band for short blocks (see sfBandTable)
-static const uint16_t m_VBUF_LENGTH            =17*2* m_NBANDS;    // for double-sized vbuf FIFO
+
+#ifdef NO_PSRAM
+	// Zmenšeno pro úsporu RAM. Pokud narazíš na artefakty v subband syntéze, můžeš experimentálně zvýšit.
+	static const uint16_t m_VBUF_LENGTH            = 9 * m_NBANDS;    // menší vbuf FIFO => menší paměť, o něco pomalejší posunování
+#else
+	static const uint16_t m_VBUF_LENGTH            =17*2* m_NBANDS;    // for double-sized vbuf FIFO
+#endif
+
 static const uint8_t  m_MAX_SCFBD              =4;     // max scalefactor bands per channel
-static const uint16_t m_MAINBUF_SIZE           =1940;
+
+// --- ÚPRAVA PRO ESP32-WROOM (bez PSRAM) ---
+#ifdef NO_PSRAM
+  static const uint16_t m_MAINBUF_SIZE           =1536;
+#else
+  static const uint16_t m_MAINBUF_SIZE           =1940;
+#endif
+
 static const uint8_t  m_MAX_NGRAN              =2;     // max granules
 static const uint8_t  m_MAX_NCHAN              =2;     // max channels
 static const uint16_t m_MAX_NSAMP              =576;   // max samples per channel, per granule

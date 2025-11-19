@@ -53,6 +53,35 @@ ScaleFactorJS_t *m_ScaleFactorJS;
 SubbandInfo_t *m_SubbandInfo;
 MP3DecInfo_t *m_MP3DecInfo;
 
+// ---------- STATIC BUFFERS FOR ESP32-WROOM (no PSRAM) ----------
+// Místo malloc() používáme pevné statické buffery, aby se zabránilo fragmentaci heapu
+static MP3DecInfo_t  s_mp3decinfo;
+static FrameHeader_t s_frameHeader;
+static SideInfo_t    s_sideInfo;
+static ScaleFactorJS_t s_scaleFactorJS;
+static HuffmanInfo_t s_huffmanInfo;
+static DequantInfo_t s_dequantInfo;
+static IMDCTInfo_t   s_imdctInfo;
+static SubbandInfo_t s_subbandInfo;
+static MP3FrameInfo_t s_mp3frameinfo;
+
+bool MP3Decoder_AllocateBuffers(void) {
+    // přiřadíme ukazatele na statické struktury
+    m_MP3DecInfo    = &s_mp3decinfo;
+    m_FrameHeader   = &s_frameHeader;
+    m_SideInfo      = &s_sideInfo;
+    m_ScaleFactorJS = &s_scaleFactorJS;
+    m_HuffmanInfo   = &s_huffmanInfo;
+    m_DequantInfo   = &s_dequantInfo;
+    m_IMDCTInfo     = &s_imdctInfo;
+    m_SubbandInfo   = &s_subbandInfo;
+    m_MP3FrameInfo  = &s_mp3frameinfo;
+
+    // jednoduchá validace (vždy OK, protože statické)
+    MP3Decoder_ClearBuffer();
+    return true;
+}
+
 const unsigned short huffTable[4242] PROGMEM = {
     /* huffTable01[9] */
     0xf003, 0x3112, 0x3101, 0x2011, 0x2011, 0x1000, 0x1000, 0x1000, 0x1000,
@@ -1538,6 +1567,7 @@ void MP3Decoder_ClearBuffer(void) {
         heap_caps_malloc_prefer(size, 2, MALLOC_CAP_DEFAULT|MALLOC_CAP_INTERNAL, MALLOC_CAP_DEFAULT|MALLOC_CAP_SPIRAM)
 #endif
 
+/*
 bool MP3Decoder_AllocateBuffers(void) {
     if(!m_MP3DecInfo)       {m_MP3DecInfo    = (MP3DecInfo_t*)    __malloc_heap_psram(sizeof(MP3DecInfo_t)   );}
     if(!m_FrameHeader)      {m_FrameHeader   = (FrameHeader_t*)   __malloc_heap_psram(sizeof(FrameHeader_t)  );}
@@ -1557,7 +1587,7 @@ bool MP3Decoder_AllocateBuffers(void) {
     }
     MP3Decoder_ClearBuffer();
     return true;
-}
+}*/
 /***********************************************************************************************************************
  * Function:    MP3Decoder_FreeBuffers
  *
